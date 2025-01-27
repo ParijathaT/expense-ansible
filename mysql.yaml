@@ -3,7 +3,7 @@
   become: yes
   vars:
     mysql_root_password: ExpnseApp@1
-  task:
+  tasks:
     - name: install MYSQL server
       ansible.builtin.packege:
         name: mysql-server
