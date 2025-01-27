@@ -53,7 +53,7 @@
       src: backend.service
       dest: /etc/systemd/system/backend.service
 
-  - name: import mysql schema
+  - name: import mysql data
     community.mysql.mysql_db:
       name: all
       login_user: root
@@ -61,7 +61,7 @@
       login_host: mysql.parijathapractice.online
       state: import
       target: /app/schema/backend.sql
-
+  
   - name: deamon reload and restart the service
     ansible.builtin.systemd_service:
       enabled: yes
