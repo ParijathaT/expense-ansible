@@ -1,3 +1,4 @@
+# 
 - name: configure backend server
   hosts: backend
   become: yes
@@ -8,7 +9,7 @@
   - name: enable nodejs 20
     ansible.builtin.command: dnf module enable nodejs:20 -y
 
-  - name: install mysql and nodejs
+  - name: install nodejs
     ansible.builtin.package:
       name: "{{ item }}"
       state: present
@@ -16,35 +17,27 @@
     - nodejs
     - mysql
 
-  - name: install python libraries
-    ansible.builtin.pip: 
-      name: "{{ item }}"
-      executable: pip3.9
-    loop:
-    - cryptography
-    - pyMySQL
-
   - name: create expense user
     ansible.builtin.user:
-      user: expense
+      name: expense
 
   - name: create app directory
     ansible.builtin.file:
       path: /app
       state: directory
-      
-  - name: download directory from url
+  
+  - name: download backend code
     ansible.builtin.get_url:
       url: https://expense-builds.s3.us-east-1.amazonaws.com/expense-backend-v2.zip
-      dest: /tmp/backend.zip 
+      dest: /tmp/backend.zip
 
   - name: unzip backend code
     ansible.builtin.unarchive:
       src: /tmp/backend.zip
       dest: /app
       remote_src: yes
-
-  - name: install dependencies
+  
+  - name: Install dependencies
     community.general.npm:
       path: /app
 
@@ -53,20 +46,26 @@
       src: backend.service
       dest: /etc/systemd/system/backend.service
 
+  - name: install python libs
+    ansible.builtin.pip:
+      name: "{{ item }}"
+      executable: pip3.9
+    loop:
+    - cryptography
+    - PyMySQL
+
   - name: import mysql data
     community.mysql.mysql_db:
+      state: import
       name: all
       login_user: root
       login_password: ExpenseApp@1
       login_host: mysql.parijathapractice.online
-      state: import
       target: /app/schema/backend.sql
-  
-  - name: deamon reload and restart the service
-    ansible.builtin.systemd_service:
-      enabled: yes
-      state: restarted
-      deamon_reload: true
-      name: backend
-      
 
+  - name: daemon reload and restart service
+    ansible.builtin.systemd_service:
+      enabled: true
+      state: restarted
+      daemon_reload: true
+      name: backend
