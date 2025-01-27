@@ -5,7 +5,7 @@
     mysql_root_password: ExpnseApp@1
   tasks:
     - name: install MYSQL server
-      ansible.builtin.packege:
+      ansible.builtin.package:
         name: mysql-server
         state: installed
 
